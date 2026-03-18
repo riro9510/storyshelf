@@ -24,13 +24,17 @@ model User {
 }
 
 model Book {
-  id          Int    @id @default(autoincrement())
-  isbn        String @unique
+  id          Int        @id @default(autoincrement())
+  isbn        String     @unique
   title       String
   author      String
   description String?
+  imageURL    String?
+  categories  String[]
   price       Float
   inventory   Inventory?
+  isFeatured  Boolean    @default(false) // for homepage featured books
+  slug        String?    @unique        // for SEO-friendly URLs
 }
 
 model Inventory {
@@ -38,6 +42,12 @@ model Inventory {
   bookId   Int  @unique
   quantity Int
   book     Book @relation(fields: [bookId], references: [id])
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  slug  String @unique    // used for /books?category=slug links
 }
 
 model Order {
