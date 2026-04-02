@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/app/lib/prisma';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 import { hashPassword } from '@/app/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { name,lastName, email, password } = await req.json();
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !lastName) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
@@ -23,14 +23,15 @@ export async function POST(req: Request) {
     const user = await prisma.user.create({
       data: {
         firstName: name,
+        lastName,
         email,
         password: hashed,
-        role: "customer",
+        role: "employee",
       },
     });
 
     return NextResponse.json(
-      { message: "Customer account created", user },
+      { message: "Employee account created", user },
       { status: 201 }
     );
   } catch {
