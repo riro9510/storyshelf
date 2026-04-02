@@ -4,18 +4,24 @@ type BookImageProps = {
     src?: string;
     alt?: string;
     className?: string;
+    width?: number;
+    height?: number;
 };
 
-export default function BookImage({ src, alt, className }: BookImageProps) {
+export default function BookImage({
+    src,
+    alt,
+    className,
+    width = 96,
+    height = 128,
+}: BookImageProps) {
     return (
         <Image
             src={src || '/book_placeholder.png'}
             alt={alt || 'Book cover'}
-            fill
+            width={width}
+            height={height}
             className={className}
-            onError={(e) => {
-                (e.target as HTMLImageElement).src = '/book_placeholder.png';
-            }}
         />
     );
 }

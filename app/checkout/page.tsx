@@ -1,88 +1,172 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import BookImage from '@/components/BookImage';
+
+type CartItem = {
+    id: number;
+    quantity: number;
+    book: {
+        id: number;
+        title: string;
+        author: string;
+        price: number;
+        imageURL?: string;
+    } | null;
+};
+
+type CheckoutForm = {
+    firstName: string;
+    lastName: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+};
+
+function formatPrice(price: number) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    }).format(price);
+}
 
 export default function CheckoutPage() {
-    const [form, setForm] = useState({
-        name: '',
-        email: '',
-        address: '',
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [loadingCart, setLoadingCart] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [form, setForm] = useState<CheckoutForm>({
+        firstName: '',
+        lastName: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: '',
     });
+    const [placingOrder, setPlacingOrder] = useState(false);
+    const [success, setSuccess] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    // Fetch cart
+    const fetchCart = async () => {
+        try {
+            const res = await fetch('/api/cart');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to load cart');
 
-        // TODO: connect to /api/orders
-        console.log('Order submitted:', form);
-
-        alert('Order placed successfully!');
+            setCartItems(data.items);
+            setError(null);
+        } catch (err: unknown) {
+            if (err instanceof Error) setError(err.message);
+            else setError('Failed to load cart');
+        } finally {
+            setLoadingCart(false);
+        }
     };
 
+    useEffect(() => {
+        fetchCart();
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const placeOrder = async () => {
+        setPlacingOrder(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                body: JSON.stringify(form),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to place order');
+            setSuccess(true);
+        } catch (err: unknown) {
+            if (err instanceof Error) setError(err.message);
+            else setError('Failed to place order');
+        } finally {
+            setPlacingOrder(false);
+        }
+    };
+
+    const total = cartItems.reduce((sum, item) => sum + (item.book?.price || 0) * item.quantity, 0);
+
+    if (loadingCart) return <p className="p-6">Loading cart...</p>;
+    if (success)
+        return (
+            <div className="max-w-xl mx-auto p-6">
+                <h1 className="text-3xl font-bold mb-4">Order Confirmed!</h1>
+                <p>Thank you for your purchase.</p>
+            </div>
+        );
+
     return (
-        <main className="mx-auto max-w-7xl px-6 py-12">
-            <div className="mb-8">
-                <h1 className="mt-4 text-3xl font-bold">Complete Your Order</h1>
-                <p className="mt-2 text-[#52796f]">Enter your details to finalize your purchase.</p>
+        <div className="max-w-4xl mx-auto p-6 space-y-8">
+            <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+
+            {error && <div className="mb-4 rounded bg-red-100 text-red-700 px-4 py-2">{error}</div>}
+
+            {/* Cart Items Summary */}
+            <div className="space-y-4">
+                {cartItems.length === 0 && <p>Your cart is empty.</p>}
+
+                {cartItems.map((item) => {
+                    if (!item.book)
+                        return (
+                            <div key={item.id} className="border p-4 rounded-xl bg-red-50">
+                                <p className="text-red-600">This book is no longer available.</p>
+                            </div>
+                        );
+
+                    return (
+                        <div key={item.id} className="flex gap-4 border p-4 rounded-xl">
+                            <BookImage
+                                src={item.book.imageURL}
+                                alt={item.book.title}
+                                className="object-cover w-24 h-32 rounded"
+                            />
+                            <div className="flex-1">
+                                <h2 className="font-semibold">{item.book.title}</h2>
+                                <p>{item.book.author}</p>
+                                <p>{formatPrice(item.book.price)}</p>
+                                <p>Quantity: {item.quantity}</p>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
-                {/* Form */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm"
+            {/* Total */}
+            <div className="border p-4 rounded-xl">
+                <h2 className="font-semibold text-lg">Total: {formatPrice(total)}</h2>
+            </div>
+
+            {/* Shipping Form */}
+            <div className="space-y-4 border p-6 rounded-xl">
+                <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+                {Object.entries(form).map(([key, value]) => (
+                    <div key={key}>
+                        <label className="block mb-1 capitalize">{key}</label>
+                        <input
+                            name={key}
+                            value={value}
+                            onChange={handleChange}
+                            className="w-full border p-2 rounded"
+                        />
+                    </div>
+                ))}
+
+                <button
+                    disabled={placingOrder}
+                    onClick={placeOrder}
+                    className="mt-4 w-full bg-black text-white py-2 rounded disabled:opacity-50"
                 >
-                    <h2 className="text-xl font-semibold text-[#2f3e46]">Customer Information</h2>
-
-                    <div className="mt-4 space-y-4">
-                        <input
-                            type="text"
-                            placeholder="Full Name"
-                            required
-                            value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className="w-full rounded-xl border border-[#cad2c5] px-4 py-3 outline-none focus:border-[#52796f]"
-                        />
-
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            required
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            className="w-full rounded-xl border border-[#cad2c5] px-4 py-3 outline-none focus:border-[#52796f]"
-                        />
-
-                        <textarea
-                            placeholder="Shipping Address"
-                            required
-                            value={form.address}
-                            onChange={(e) => setForm({ ...form, address: e.target.value })}
-                            className="w-full rounded-xl border border-[#cad2c5] px-4 py-3 outline-none focus:border-[#52796f]"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="mt-6 w-full rounded-xl bg-[#2f3e46] px-5 py-3 font-semibold text-white hover:opacity-90"
-                    >
-                        Place Order
-                    </button>
-                </form>
-
-                {/* Summary Placeholder */}
-                <div className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-[#2f3e46]">Order Summary</h2>
-
-                    <p className="mt-4 text-[#52796f]">
-                        Cart summary will appear here (connect from cart or backend).
-                    </p>
-
-                    <div className="mt-6 border-t pt-4 flex justify-between">
-                        <span className="font-medium text-[#52796f]">Total</span>
-                        <span className="font-bold text-[#354f52]">$0.00</span>
-                    </div>
-                </div>
+                    {placingOrder ? 'Placing Order...' : 'Place Order'}
+                </button>
             </div>
-        </main>
+        </div>
     );
 }
