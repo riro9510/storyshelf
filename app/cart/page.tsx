@@ -1,14 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import BookImage from '@/components/BookImage';
 
 type CartItem = {
     id: number;
-    title: string;
-    author: string;
-    price: number;
     quantity: number;
+    book: {
+        id: number;
+        title: string;
+        author: string;
+        price: number;
+        imageURL?: string;
+    };
 };
 
 function formatPrice(price: number) {
@@ -19,116 +24,136 @@ function formatPrice(price: number) {
 }
 
 export default function CartPage() {
-    // Mock cart data (replace with localStorage later)
-    const [cartItems, setCartItems] = useState<CartItem[]>([
-        {
-            id: 1,
-            title: 'The Silent Patient',
-            author: 'Alex Michaelides',
-            price: 18.99,
-            quantity: 1,
-        },
-        {
-            id: 2,
-            title: 'Atomic Habits',
-            author: 'James Clear',
-            price: 21.5,
-            quantity: 2,
-        },
-    ]);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const updateQuantity = (id: number, amount: number) => {
-        setCartItems((items) =>
-            items.map((item) =>
-                item.id === id ? { ...item, quantity: Math.max(1, item.quantity + amount) } : item
-            )
-        );
+    const fetchCart = async () => {
+        try {
+            const res = await fetch('/api/cart');
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'Failed to load cart');
+
+            setCartItems(data.items);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Failed to load cart');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const removeItem = (id: number) => {
-        setCartItems((items) => items.filter((item) => item.id !== id));
+    useEffect(() => {
+        fetchCart();
+    }, []);
+
+    const updateQuantity = async (bookId: number, quantity: number) => {
+        try {
+            const res = await fetch('/api/cart', {
+                method: 'POST',
+                body: JSON.stringify({ bookId, quantity }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            await fetchCart(); // refresh from DB
+        }  catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Failed to update cart');
+            }
+        }
     };
 
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = cartItems.reduce(
+        (sum, item) => sum + item.book.price * item.quantity,
+        0
+    );
+
+    if (loading) return <p className="p-6">Loading cart...</p>;
+    if (error) return <p className="p-6 text-red-500">{error}</p>;
 
     return (
         <main className="mx-auto max-w-7xl px-6 py-12">
-            <div className="mb-8">
-                <h1 className="mt-4 text-3xl font-bold">Shopping Cart</h1>
-                <p className="mt-2 text-[#52796f]">Review your selected books before checkout.</p>
-            </div>
+            <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
 
             {cartItems.length === 0 ? (
-                <div className="rounded-3xl border border-[#cad2c5] bg-white p-10 text-center shadow-sm">
-                    <p className="text-lg text-[#52796f]">Your cart is empty.</p>
-                    <Link
-                        href="/books"
-                        className="mt-6 inline-block rounded-full bg-[#2f3e46] px-6 py-3 font-semibold text-white"
-                    >
-                        Browse Books
-                    </Link>
-                </div>
+                <p>Your cart is empty.</p>
             ) : (
                 <div className="grid gap-8 md:grid-cols-3">
-                    {/* Cart Items */}
+                    {/* Items */}
                     <div className="md:col-span-2 space-y-6">
                         {cartItems.map((item) => (
-                            <div
-                                key={item.id}
-                                className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm"
-                            >
-                                <div className="flex justify-between">
-                                    <div>
-                                        <h2 className="text-xl font-semibold text-[#2f3e46]">
-                                            {item.title}
+                            <div key={item.id} className="border p-4 rounded-xl">
+                                <div className="flex gap-4">
+                                    <BookImage
+                                        src={item.book.imageURL}
+                                        alt={item.book.title}
+                                        className="object-cover rounded"
+                                    />
+
+                                    <div className="flex-1">
+                                        <h2 className="font-semibold">
+                                            {item.book.title}
                                         </h2>
-                                        <p className="text-[#52796f]">{item.author}</p>
-                                        <p className="mt-2 font-semibold text-[#354f52]">
-                                            {formatPrice(item.price)}
-                                        </p>
+                                        <p>{item.book.author}</p>
+                                        <p>{formatPrice(item.book.price)}</p>
+
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() =>
+                                                    updateQuantity(
+                                                        item.book.id,
+                                                        item.quantity - 1
+                                                    )
+                                                }
+                                            >
+                                                -
+                                            </button>
+                                            <span>{item.quantity}</span>
+                                            <button
+                                                onClick={() =>
+                                                    updateQuantity(
+                                                        item.book.id,
+                                                        item.quantity + 1
+                                                    )
+                                                }
+                                            >
+                                                +
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    updateQuantity(item.book.id, 0)
+                                                }
+                                                className="text-red-500 ml-4"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
                                     </div>
-
-                                    <button
-                                        onClick={() => removeItem(item.id)}
-                                        className="text-sm text-red-600 hover:underline"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-
-                                <div className="mt-4 flex items-center gap-4">
-                                    <button
-                                        onClick={() => updateQuantity(item.id, -1)}
-                                        className="rounded-lg border px-3 py-1"
-                                    >
-                                        -
-                                    </button>
-                                    <span>{item.quantity}</span>
-                                    <button
-                                        onClick={() => updateQuantity(item.id, 1)}
-                                        className="rounded-lg border px-3 py-1"
-                                    >
-                                        +
-                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Summary */}
-                    <div className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm h-fit">
-                        <h2 className="text-xl font-semibold text-[#2f3e46]">Order Summary</h2>
-
-                        <div className="mt-4 flex justify-between text-[#52796f]">
-                            <span>Total</span>
-                            <span className="font-bold text-[#354f52]">{formatPrice(total)}</span>
-                        </div>
+                    <div className="border p-6 rounded-xl">
+                        <h2 className="text-xl font-semibold">Summary</h2>
+                        <p className="mt-4">
+                            Total: <strong>{formatPrice(total)}</strong>
+                        </p>
 
                         <Link
                             href="/checkout"
-                            className="mt-6 block w-full rounded-xl bg-[#52796f] px-5 py-3 text-center font-semibold text-white hover:opacity-90"
+                            className="block mt-4 bg-black text-white text-center py-2 rounded"
                         >
-                            Proceed to Checkout
+                            Checkout
                         </Link>
                     </div>
                 </div>
