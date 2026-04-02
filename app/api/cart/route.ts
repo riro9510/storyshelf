@@ -64,22 +64,27 @@ export async function POST(req: NextRequest) {
             include: { inventory: true },
         });
 
-        if (!book || !book.inventory)
-            return NextResponse.json({ error: 'Book not found' }, { status: 404 });
-        if (quantity > book.inventory.quantity)
+        if (!book)
+            return NextResponse.json({ error: 'This book no longer exists.' }, { status: 404 });
+
+        if (!book.inventory)
             return NextResponse.json(
-                { error: `Only ${book.inventory.quantity} in stock` },
-                { status: 400 }
+                { error: 'This book is currently unavailable.' },
+                { status: 404 }
             );
 
         const existingItem = await prisma.orderItem.findFirst({
             where: { bookId, orderId: order.id },
         });
 
+        let priceChanged = false;
+
         if (existingItem) {
             if (quantity === 0) {
                 await prisma.orderItem.delete({ where: { id: existingItem.id } });
             } else {
+                if (existingItem.price !== book.price) priceChanged = true;
+
                 await prisma.orderItem.update({
                     where: { id: existingItem.id },
                     data: { quantity, price: book.price },
@@ -91,10 +96,9 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // Recalculate totals using helper
         const totals = await recalcOrderTotals(order.id);
 
-        return NextResponse.json({ success: true, totals });
+        return NextResponse.json({ success: true, totals, priceChanged });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed to update cart' }, { status: 500 });
