@@ -46,10 +46,10 @@ export default function CheckoutPage() {
         country: '',
     });
     const [placingOrder, setPlacingOrder] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [success] = useState(false);
 
     const hasInvalidItems = cartItems.some((item) => !item.book);
-    const isFormIncomplete = Object.values(form).some(v => !v.trim());
+    const isFormIncomplete = Object.values(form).some((v) => !v.trim());
 
     const fetchCart = async () => {
         try {
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
     };
 
     const placeOrder = async () => {
-        if (hasInvalidItems || cartItems.length === 0) return;
+        if (hasInvalidItems || cartItems.length === 0 || isFormIncomplete) return;
 
         setPlacingOrder(true);
         setError(null);
@@ -87,9 +87,13 @@ export default function CheckoutPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
             });
+
             const data = await res.json();
+
             if (!res.ok) throw new Error(data.error || 'Failed to place order');
-            setSuccess(true);
+
+            const url: string = data.url;
+            window.location.href = url;
         } catch (err: unknown) {
             if (err instanceof Error) setError(err.message);
             else setError('Failed to place order');
@@ -174,7 +178,12 @@ export default function CheckoutPage() {
                 ))}
 
                 <button
-                    disabled={placingOrder || hasInvalidItems || cartItems.length === 0 || isFormIncomplete}
+                    disabled={
+                        placingOrder ||
+                        hasInvalidItems ||
+                        cartItems.length === 0 ||
+                        isFormIncomplete
+                    }
                     onClick={placeOrder}
                     className="mt-4 w-full bg-black text-white py-2 rounded disabled:opacity-50"
                 >
