@@ -46,9 +46,11 @@ export default function CheckoutPage() {
         country: '',
     });
     const [placingOrder, setPlacingOrder] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [success] = useState(false);
 
-    // Fetch cart
+    const hasInvalidItems = cartItems.some((item) => !item.book);
+    const isFormIncomplete = Object.values(form).some((v) => !v.trim());
+
     const fetchCart = async () => {
         try {
             const res = await fetch('/api/cart');
@@ -74,16 +76,25 @@ export default function CheckoutPage() {
     };
 
     const placeOrder = async () => {
+        if (hasInvalidItems || cartItems.length === 0 || isFormIncomplete) return;
+        if (placingOrder) return;
+
         setPlacingOrder(true);
         setError(null);
+
         try {
             const res = await fetch('/api/checkout', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
             });
+
             const data = await res.json();
+
             if (!res.ok) throw new Error(data.error || 'Failed to place order');
-            setSuccess(true);
+
+            const url: string = data.url;
+            window.location.href = url;
         } catch (err: unknown) {
             if (err instanceof Error) setError(err.message);
             else setError('Failed to place order');
@@ -108,6 +119,13 @@ export default function CheckoutPage() {
             <h1 className="text-3xl font-bold mb-6">Checkout</h1>
 
             {error && <div className="mb-4 rounded bg-red-100 text-red-700 px-4 py-2">{error}</div>}
+
+            {hasInvalidItems && (
+                <p className="text-red-500 mt-2">
+                    Some items in your cart are no longer available. Please remove them before
+                    placing your order.
+                </p>
+            )}
 
             {/* Cart Items Summary */}
             <div className="space-y-4">
@@ -154,17 +172,23 @@ export default function CheckoutPage() {
                             name={key}
                             value={value}
                             onChange={handleChange}
+                            required
                             className="w-full border p-2 rounded"
                         />
                     </div>
                 ))}
 
                 <button
-                    disabled={placingOrder}
+                    disabled={
+                        placingOrder ||
+                        hasInvalidItems ||
+                        cartItems.length === 0 ||
+                        isFormIncomplete
+                    }
                     onClick={placeOrder}
                     className="mt-4 w-full bg-black text-white py-2 rounded disabled:opacity-50"
                 >
-                    {placingOrder ? 'Placing Order...' : 'Place Order'}
+                    {placingOrder ? 'Processing...' : 'Place Order'}
                 </button>
             </div>
         </div>
