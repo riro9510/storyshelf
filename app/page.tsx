@@ -283,13 +283,13 @@ export default function Home() {
                 id="about"
                 className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 py-8 md:grid-cols-3 md:py-14"
             >
-                <div className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm">
+                <Link href="/books" className="block"><div className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm">
                     <h3 className="text-xl font-semibold text-[#2f3e46]">Books</h3>
                     <p className="mt-3 leading-7 text-[#52796f]">
                         Main catalog table with title, author, price, stock, image and category
                         relation.
                     </p>
-                </div>
+                </div></Link>
 
                 <div className="rounded-3xl border border-[#cad2c5] bg-white p-6 shadow-sm">
                     <h3 className="text-xl font-semibold text-[#2f3e46]">Categories</h3>
