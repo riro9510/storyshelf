@@ -16,10 +16,17 @@ function generateSlug(title: string, isbn: string) {
 async function main() {
     console.log('Start seeding...');
 
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.bookCategory.deleteMany();
+    await prisma.inventory.deleteMany();
+    await prisma.book.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.address.deleteMany();
+    await prisma.user.deleteMany();
+
     // --- USERS ---
     const passwordHash = await bcrypt.hash('password123', 10);
-
-    await prisma.user.deleteMany({});
 
     await prisma.user.create({
         data: {
@@ -57,10 +64,6 @@ async function main() {
     });
 
     // --- CATEGORIES ---
-    await prisma.bookCategory.deleteMany({});
-    await prisma.book.deleteMany({});
-    await prisma.category.deleteMany({});
-
     const categoriesData = [
         { name: 'Fiction', slug: 'fiction' },
         { name: 'Mystery', slug: 'mystery' },
@@ -72,6 +75,24 @@ async function main() {
         { name: 'Biography', slug: 'biography' },
         { name: 'History', slug: 'history' },
         { name: 'Young Adult', slug: 'young-adult' },
+        { name: 'Non-Fiction', slug: 'non-fiction' },
+        { name: 'Psychology', slug: 'psychology' },
+        { name: 'Health', slug: 'health' },
+        { name: 'Post-Apocalyptic', slug: 'post-apocalyptic' },
+        { name: 'Classic', slug: 'classic' },
+        { name: 'Children', slug: 'children' },
+        { name: 'Dystopian', slug: 'dystopian' },
+        { name: 'Historical', slug: 'historical' },
+        { name: 'Poetry', slug: 'poetry' },
+        { name: 'Adventure', slug: 'adventure' },
+        { name: 'Magical Realism', slug: 'magical-realism' },
+        { name: 'Epic', slug: 'epic' },
+        { name: 'Literary', slug: 'literary' },
+        { name: 'Picture Book', slug: 'picture-book' },
+        { name: 'Middle Grade', slug: 'middle-grade' },
+        { name: 'Suspense', slug: 'suspense' },
+        { name: 'Science', slug: 'science' },
+        { name: 'Science Fiction', slug: 'science-fiction' },
     ];
 
     const categories: Record<string, { id: number; name: string; slug: string }> = {};
@@ -85,93 +106,83 @@ async function main() {
     }
 
     // --- BOOKS ---
-    const booksData = [
+    const books = [
         {
             isbn: '9780307474278',
-            title: 'The Girl with the Dragon Tattoo',
-            author: 'Stieg Larsson',
-            description: 'A gripping thriller about mystery and corruption.',
+            title: 'The Da Vinci Code',
+            author: 'Dan Brown',
+            description:
+                'Harvard symbologist Robert Langdon and cryptologist Sophie Neveu investigate a mysterious murder at the Louvre, leading them into a trail of cryptic clues and centuries-old secrets hidden in works of art. As they race across Europe, they uncover a breathtaking historical conspiracy.',
             price: 15.99,
-            categories: ['fiction', 'mystery', 'thriller'],
+            categories: ['fiction', 'mystery', 'thriller', 'suspense'],
             quantity: 10,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780307474278-L.jpg',
-            pageCount: 465,
-            printType: 'Hardcover',
-            publisher: 'Vintage Crime/Black Lizard',
-            publishedDate: new Date('2008-09-16'),
+            pageCount: 624,
+            printType: 'Paperback',
+            publisher: 'Anchor',
+            publishedDate: new Date('2009-03-31'),
         },
         {
             isbn: '9780439139601',
             title: 'Harry Potter and the Goblet of Fire',
             author: 'J.K. Rowling',
-            description: 'The fourth book in the Harry Potter series.',
+            description:
+                'In his fourth year at Hogwarts, Harry Potter is unexpectedly entered into the dangerous Triwizard Tournament. As he faces life-threatening challenges and dark forces begin to rise, he must rely on his courage and friends to survive.',
             price: 12.99,
-            categories: ['fiction', 'fantasy'],
+            categories: ['fiction', 'fantasy', 'young-adult'],
             quantity: 20,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780439139601-L.jpg',
-            pageCount: 734,
-            printType: 'Hardcover',
-            publisher: 'Scholastic',
-            publishedDate: new Date('2000-07-08'),
+            pageCount: 752,
+            printType: 'Paperback',
+            publisher: 'Scholastic Paperbacks',
+            publishedDate: new Date('2002-09-01'),
         },
         {
             isbn: '9780062316097',
             title: 'Sapiens: A Brief History of Humankind',
-            author: 'Yuval Harari',
-            description: 'Explores the history of humankind from ancient times to today.',
+            author: 'Yuval Noah Harari',
+            description:
+                'A landmark narrative exploring the history of humankind, from the emergence of Homo sapiens through the Cognitive, Agricultural, and Scientific Revolutions, blending science, history, and anthropology in an accessible and thought‑provoking way.',
             price: 18.99,
-            categories: ['history', 'biography'],
+            categories: ['non-fiction', 'history', 'science'],
             quantity: 15,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg',
-            pageCount: 498,
-            printType: 'Paperback',
+            pageCount: 464,
+            printType: 'Hardcover',
             publisher: 'Harper',
             publishedDate: new Date('2015-02-10'),
         },
         {
             isbn: '9780143127741',
-            title: 'Educated',
-            author: 'Tara Westover',
-            description: 'A memoir about a woman who grows up in rural Idaho and seeks education.',
+            title: 'The Body Keeps the Score: Brain, Mind, and Body in the Healing of Trauma',
+            author: 'Bessel van der Kolk, M.D.',
+            description:
+                'A groundbreaking work exploring how trauma reshapes the brain and body and offering innovative approaches to healing through both psychological insights and body‑based therapies.',
             price: 16.99,
-            categories: ['biography', 'history'],
+            categories: ['non-fiction', 'psychology', 'health'],
             quantity: 10,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780143127741-L.jpg',
-            pageCount: 334,
+            pageCount: 464,
             printType: 'Paperback',
-            publisher: 'Random House',
-            publishedDate: new Date('2018-02-20'),
-        },
-        {
-            isbn: '9780307277671',
-            title: 'The Road',
-            author: 'Cormac McCarthy',
-            description: 'A post-apocalyptic novel about survival and fatherhood.',
-            price: 14.99,
-            categories: ['fiction', 'thriller'],
-            quantity: 12,
-            isFeatured: false,
-            imageURL: 'https://covers.openlibrary.org/b/isbn/9780307277671-L.jpg',
-            pageCount: 287,
-            printType: 'Paperback',
-            publisher: 'Knopf',
-            publishedDate: new Date('2006-09-26'),
+            publisher: 'Penguin Books',
+            publishedDate: new Date('2015-09-08'),
         },
         {
             isbn: '9780060850524',
             title: 'Brave New World',
             author: 'Aldous Huxley',
-            description: 'A dystopian novel exploring futuristic society and control.',
+            description:
+                'A dystopian classic that imagines a future world society shaped by advanced science, social engineering, and psychological manipulation. Huxley’s novel explores themes of freedom, conformity, consumerism, and what it means to be human.',
             price: 11.99,
-            categories: ['fiction', 'sci-fi'],
+            categories: ['fiction', 'classic', 'dystopian', 'science-fiction'],
             quantity: 8,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg',
-            pageCount: 268,
+            pageCount: 288,
             printType: 'Paperback',
             publisher: 'Harper Perennial Modern Classics',
             publishedDate: new Date('2006-10-17'),
@@ -180,43 +191,46 @@ async function main() {
             isbn: '9780316015844',
             title: 'Twilight',
             author: 'Stephenie Meyer',
-            description: 'A young adult vampire romance story.',
+            description:
+                'Bella Swan’s life changes forever when she moves to Forks, Washington, where she meets the mysterious and alluring Edward Cullen. As their romance deepens, Bella discovers Edward’s dangerous secret and the risks of loving a vampire.',
             price: 10.99,
-            categories: ['fiction', 'young-adult', 'romance'],
+            categories: ['fiction', 'young-adult', 'romance', 'fantasy'],
             quantity: 25,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780316015844-L.jpg',
             pageCount: 498,
             printType: 'Paperback',
-            publisher: 'Little, Brown and Company',
-            publishedDate: new Date('2005-10-05'),
+            publisher: 'Little, Brown Books for Young Readers',
+            publishedDate: new Date('2006-09-06'),
         },
         {
             isbn: '9780394800011',
-            title: 'Where the Wild Things Are',
-            author: 'Maurice Sendak',
-            description: "A classic children's book about imagination and adventure.",
+            title: 'The Cat in the Hat',
+            author: 'Dr. Seuss',
+            description:
+                'A classic children’s picture book in which a mischievous cat in a tall striped hat turns a dull, rainy afternoon into a fun and chaotic adventure for two siblings, showing them the joys of imagination and play.',
             price: 8.99,
-            categories: ['fiction', 'young-adult'],
+            categories: ['children', 'fiction', 'picture-book'],
             quantity: 30,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780394800011-L.jpg',
-            pageCount: 48,
+            pageCount: 72,
             printType: 'Hardcover',
-            publisher: 'Harper & Row',
-            publishedDate: new Date('1963-04-09'),
+            publisher: 'Random House Books for Young Readers',
+            publishedDate: new Date('1957-03-12'),
         },
         {
             isbn: '9781451673319',
             title: 'Fahrenheit 451',
             author: 'Ray Bradbury',
-            description: 'Dystopian novel about book burning and censorship.',
+            description:
+                'In a future society where books are outlawed and “firemen” burn any that are found, Guy Montag begins to question his role in suppressing knowledge. As he confronts the meaning of individuality and freedom, he must choose between conformity and the courage to think for himself.',
             price: 12.5,
-            categories: ['fiction', 'sci-fi'],
+            categories: ['fiction', 'science-fiction', 'dystopian', 'classic'],
             quantity: 15,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9781451673319-L.jpg',
-            pageCount: 249,
+            pageCount: 256,
             printType: 'Paperback',
             publisher: 'Simon & Schuster',
             publishedDate: new Date('2012-01-10'),
@@ -225,54 +239,42 @@ async function main() {
             isbn: '9780141439600',
             title: 'Pride and Prejudice',
             author: 'Jane Austen',
-            description: 'A classic romance novel about manners and marriage.',
+            description:
+                'A timeless romance that follows Elizabeth Bennet as she navigates issues of class, marriage, and morality in early 19th‑century England, especially in her complex relationship with the enigmatic Mr. Darcy.',
             price: 9.99,
-            categories: ['fiction', 'romance'],
+            categories: ['fiction', 'classic', 'romance'],
             quantity: 18,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780141439600-L.jpg',
-            pageCount: 279,
+            pageCount: 480,
             printType: 'Paperback',
             publisher: 'Penguin Classics',
             publishedDate: new Date('2002-12-31'),
         },
         {
-            isbn: '9780385504201',
-            title: 'The Da Vinci Code',
-            author: 'Dan Brown',
-            description: 'Mystery thriller exploring secret societies and conspiracies.',
-            price: 14.99,
-            categories: ['fiction', 'mystery', 'thriller'],
-            quantity: 20,
-            isFeatured: true,
-            imageURL: 'https://covers.openlibrary.org/b/isbn/9780385504201-L.jpg',
-            pageCount: 489,
-            printType: 'Hardcover',
-            publisher: 'Doubleday',
-            publishedDate: new Date('2003-04-03'),
-        },
-        {
             isbn: '9780618260300',
-            title: 'The Hobbit',
+            title: 'The Hobbit, Or, There and Back Again',
             author: 'J.R.R. Tolkien',
-            description: 'A fantasy adventure prequel to the Lord of the Rings.',
+            description:
+                'Bilbo Baggins, a humble hobbit, is swept into an epic adventure when the wizard Gandalf and thirteen dwarves recruit him to help reclaim their homeland from the fearsome dragon Smaug. Along the way Bilbo discovers courage, cunning, and the value of home.',
             price: 13.99,
-            categories: ['fiction', 'fantasy'],
+            categories: ['fiction', 'fantasy', 'classic', 'adventure'],
             quantity: 15,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780618260300-L.jpg',
-            pageCount: 310,
+            pageCount: 384,
             printType: 'Paperback',
-            publisher: 'Houghton Mifflin Harcourt',
-            publishedDate: new Date('2002-09-21'),
+            publisher: 'Clarion Books',
+            publishedDate: new Date('2002-08-15'),
         },
         {
             isbn: '9780061120084',
             title: 'To Kill a Mockingbird',
             author: 'Harper Lee',
-            description: 'Classic novel about race, injustice, and morality.',
+            description:
+                'Set in the American South during the 1930s, this Pulitzer Prize‑winning novel follows young Scout Finch as her father, Atticus Finch, defends a Black man wrongly accused of a terrible crime. It explores themes of racial injustice, moral courage, and empathy.',
             price: 12.5,
-            categories: ['fiction', 'history'],
+            categories: ['fiction', 'classic', 'historical'],
             quantity: 18,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg',
@@ -283,113 +285,136 @@ async function main() {
         },
         {
             isbn: '9780307387899',
-            title: 'Gone Girl',
-            author: 'Gillian Flynn',
-            description: 'Psychological thriller about marriage, deception, and crime.',
+            title: 'The Road',
+            author: 'Cormac McCarthy',
+            description:
+                'In a stark, post‑apocalyptic world, a father and his young son undertake a perilous journey through a burned America, struggling to survive while holding onto their humanity and hope amid devastation.',
             price: 15.0,
-            categories: ['fiction', 'mystery', 'thriller'],
+            categories: ['fiction', 'post-apocalyptic', 'literary'],
             quantity: 12,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780307387899-L.jpg',
-            pageCount: 422,
+            pageCount: 304,
             printType: 'Paperback',
-            publisher: 'Crown Publishing Group',
-            publishedDate: new Date('2012-06-05'),
+            publisher: 'Vintage',
+            publishedDate: new Date('2007-03-28'),
         },
         {
             isbn: '9780140449266',
-            title: 'The Odyssey',
-            author: 'Homer',
-            description: 'Epic Greek poem about Odysseus’s journey home after the Trojan War.',
+            title: 'The Count of Monte Cristo',
+            author: 'Alexandre Dumas',
+            description:
+                'After being falsely imprisoned, Edmond Dantès escapes from the Château d’If and sets in motion an intricate plan of revenge against those who betrayed him. This epic adventure blends betrayal, intrigue, justice, and redemption in a sweeping tale across 19th‑century Europe.',
             price: 10.99,
-            categories: ['fiction', 'history'],
+            categories: ['fiction', 'classic', 'adventure', 'historical'],
             quantity: 20,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780140449266-L.jpg',
-            pageCount: 541,
+            pageCount: 1312,
             printType: 'Paperback',
             publisher: 'Penguin Classics',
-            publishedDate: new Date('1996-11-01'),
+            publishedDate: new Date('2003-05-27'),
         },
         {
             isbn: '9780553386790',
-            title: 'The Martian',
-            author: 'Andy Weir',
-            description: 'A sci-fi survival story on Mars.',
+            title: 'A Game of Thrones',
+            author: 'George R.R. Martin',
+            description:
+                'In the war‑torn fantasy land of Westeros, noble families battle for power, honor, and survival as political intrigue, betrayal, and supernatural forces shape the fate of the Seven Kingdoms. The first book in the epic Song of Ice and Fire series.',
             price: 16.99,
-            categories: ['fiction', 'sci-fi', 'thriller'],
+            categories: ['fiction', 'fantasy', 'epic'],
             quantity: 25,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780553386790-L.jpg',
-            pageCount: 369,
+            pageCount: 720,
             printType: 'Paperback',
-            publisher: 'Crown',
-            publishedDate: new Date('2014-02-11'),
+            publisher: 'Random House Worlds',
+            publishedDate: new Date('2011-03-22'),
         },
         {
             isbn: '9780062073488',
             title: 'The Book Thief',
             author: 'Markus Zusak',
-            description: 'Historical novel about a girl living in Nazi Germany.',
+            description:
+                'Set in Nazi Germany, this powerful novel—told from Death’s perspective—follows Liesel Meminger, a young girl who steals books to find solace and strength in the midst of war, and whose life becomes intertwined with the families and people who shape her world.',
             price: 14.99,
-            categories: ['fiction', 'history', 'young-adult'],
+            categories: ['fiction', 'historical', 'young-adult'],
             quantity: 18,
             isFeatured: true,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780062073488-L.jpg',
-            pageCount: 552,
+            pageCount: 584,
             printType: 'Paperback',
-            publisher: 'Knopf Books for Young Readers',
+            publisher: 'Alfred A. Knopf Books for Young Readers',
             publishedDate: new Date('2007-09-11'),
         },
         {
             isbn: '9780143127796',
             title: 'The Night Circus',
             author: 'Erin Morgenstern',
-            description: 'A fantasy novel about a magical competition and romance.',
+            description:
+                'A mysterious circus that only opens at night becomes the setting for a magical competition between two young illusionists. As their enchantments and rivalry grow, so does a forbidden romance, and the circus itself becomes intertwined with their fate.',
             price: 13.99,
-            categories: ['fiction', 'fantasy', 'romance'],
+            categories: ['fiction', 'fantasy', 'magical-realism'],
             quantity: 10,
             isFeatured: false,
             imageURL: 'https://covers.openlibrary.org/b/isbn/9780143127796-L.jpg',
-            pageCount: 387,
+            pageCount: 400,
             printType: 'Paperback',
-            publisher: 'Anchor',
+            publisher: 'Anchor Books',
             publishedDate: new Date('2011-09-13'),
         },
         {
-            isbn: '9780345803481',
-            title: 'Fifty Shades of Grey',
-            author: 'E. L. James',
-            description: 'Romance novel about an intense relationship.',
-            price: 11.99,
-            categories: ['fiction', 'romance'],
-            quantity: 22,
+            isbn: '9781649374042',
+            title: 'Fourth Wing',
+            author: 'Rebecca Yarros',
+            description:
+                'In a fantasy world where dragon riders are trained at the brutal Basgiath War College, Violet Sorrengail must prove herself in perilous trials, forge unlikely alliances, and confront dangers both political and supernatural as she fights to survive and uncover hidden truths.',
+            price: 17.99,
+            categories: ['fiction', 'fantasy', 'romance', 'young-adult'],
+            quantity: 12,
             isFeatured: false,
-            imageURL: 'https://covers.openlibrary.org/b/isbn/9780345803481-L.jpg',
-            pageCount: 514,
-            printType: 'Paperback',
-            publisher: 'Vintage',
-            publishedDate: new Date('2012-04-03'),
+            imageURL: 'https://covers.openlibrary.org/b/isbn/9781649374042-L.jpg',
+            pageCount: 528,
+            printType: 'Hardcover',
+            publisher: 'Entangled: Red Tower Books',
+            publishedDate: new Date('2023-05-02'),
         },
         {
-            isbn: '9780062457714',
-            title: 'It',
-            author: 'Stephen King',
-            description: 'Horror novel about a terrifying clown haunting a town.',
-            price: 15.99,
-            categories: ['fiction', 'horror'],
+            isbn: '9781590385814',
+            title: 'Fablehaven: Volume 1',
+            author: 'Brandon Mull',
+            description:
+                'At his grandparents’ estate, young siblings Kendra and Seth discover a hidden sanctuary for magical creatures. When ancient laws are broken and a powerful evil is unleashed, they must summon all their courage to save Fablehaven and perhaps the world.',
+            price: 19.99,
+            categories: ['fiction', 'fantasy', 'children', 'middle-grade'],
             quantity: 15,
-            isFeatured: true,
-            imageURL: 'https://covers.openlibrary.org/b/isbn/9780062457714-L.jpg',
-            pageCount: 1138,
+            isFeatured: false,
+            imageURL: 'https://covers.openlibrary.org/b/isbn/9781590385814-L.jpg',
+            pageCount: 368,
             printType: 'Hardcover',
-            publisher: 'Scribner',
-            publishedDate: new Date('2011-09-15'),
+            publisher: 'Shadow Mountain',
+            publishedDate: new Date('2006-06-07'),
+        },
+        {
+            isbn: '9780064431781',
+            title: 'Where the Wild Things Are',
+            author: 'Maurice Sendak',
+            description:
+                'A beloved children’s picture book in which young Max, sent to his room without supper, imagines sailing away to a land of wild creatures and being crowned their king, only to return home where he is loved best of all.',
+            price: 8.99,
+            categories: ['children', 'fiction', 'picture-book'],
+            quantity: 30,
+            isFeatured: false,
+            imageURL: 'https://covers.openlibrary.org/b/isbn/9780064431781-L.jpg',
+            pageCount: 48,
+            printType: 'Paperback',
+            publisher: 'HarperCollins',
+            publishedDate: new Date('1984-01-01'),
         },
     ];
 
     const createdBooks = [];
-    for (const b of booksData) {
+    for (const b of books) {
         const slug = generateSlug(b.title, b.isbn);
         const book = await prisma.book.upsert({
             where: { isbn: b.isbn },
@@ -410,6 +435,7 @@ async function main() {
             update: {
                 title: b.title,
                 author: b.author,
+                slug,
                 description: b.description,
                 price: b.price,
                 isFeatured: b.isFeatured,
@@ -429,10 +455,19 @@ async function main() {
         });
 
         // Book-Category
-        await prisma.bookCategory.deleteMany({ where: { bookId: book.id } });
         for (const catSlug of b.categories) {
+            const category = categories[catSlug];
+
+            if (!category) {
+                throw new Error(`Category not found for slug: ${catSlug}`);
+            }
+
+            await prisma.bookCategory.deleteMany({
+                where: { bookId: book.id },
+            });
+
             await prisma.bookCategory.create({
-                data: { bookId: book.id, categoryId: categories[catSlug].id },
+                data: { bookId: book.id, categoryId: category.id },
             });
         }
 
@@ -440,8 +475,6 @@ async function main() {
     }
 
     // --- ORDERS ---
-    await prisma.order.deleteMany({ where: { userId: customer.id } });
-
     // Order 1 - Payment Succeeded
     await prisma.order.create({
         data: {
