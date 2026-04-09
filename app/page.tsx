@@ -113,12 +113,7 @@ export default function Home() {
                         >
                             Browse Books
                         </Link>
-                        <Link
-                            href="/employee/login"
-                            className="rounded-full border border-[#354f52] px-6 py-3 text-center font-semibold text-[#354f52] transition hover:bg-[#354f52] hover:text-white"
-                        >
-                            Employee Login
-                        </Link>
+                      
                     </div>
 
                     {/* <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -344,7 +339,7 @@ export default function Home() {
                             Shop Now
                         </Link>
                         <Link
-                            href="/employee/login"
+                            href="/login"
                             className="rounded-full border border-white px-6 py-3 text-center font-semibold text-white"
                         >
                             Staff Access
