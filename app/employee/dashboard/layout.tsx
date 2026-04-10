@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                     <h1 className="text-xl font-semibold text-[#2f3e46]">
                         {user ? `Hello ${user.firstName}!` : 'Employee Dashboard'}
                     </h1>
-                    
+
                     <Link
                         href="/employee/dashboard"
                         className="rounded-lg border border-[#cad2c5] px-4 py-2 text-sm font-medium text-[#2f3e46] hover:bg-[#f0f4f3]"

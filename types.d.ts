@@ -1,1 +1,1 @@
-global.d.ts
+global.d.ts;

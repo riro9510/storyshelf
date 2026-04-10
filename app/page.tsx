@@ -31,7 +31,6 @@ const categories: Category[] = [
     { id: 6, name: 'Children', slug: 'children' },
 ];
 
-
 function formatPrice(price: number) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -48,9 +47,8 @@ export default function Home() {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [featuredBooks, setFeaturedBooks] = useState<any[]>([]);
-    const [loadingFeatured, setLoadingFeatured] = useState(true);  
-    
-    
+    const [loadingFeatured, setLoadingFeatured] = useState(true);
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -70,21 +68,21 @@ export default function Home() {
     };
 
     useEffect(() => {
-  const fetchFeatured = async () => {
-    try {
-      const res = await fetch('/api/books/list?isFeatured=true&limit=4');
-      const data = await res.json();
-      setFeaturedBooks(data.items || []);
-    } catch (err) {
-      console.error('Error fetching featured books:', err);
-      setFeaturedBooks([]);
-    } finally {
-      setLoadingFeatured(false);
-    }
-  };
+        const fetchFeatured = async () => {
+            try {
+                const res = await fetch('/api/books/list?isFeatured=true&limit=4');
+                const data = await res.json();
+                setFeaturedBooks(data.items || []);
+            } catch (err) {
+                console.error('Error fetching featured books:', err);
+                setFeaturedBooks([]);
+            } finally {
+                setLoadingFeatured(false);
+            }
+        };
 
-  fetchFeatured();
-}, []);
+        fetchFeatured();
+    }, []);
 
     return (
         <main>
@@ -113,7 +111,6 @@ export default function Home() {
                         >
                             Browse Books
                         </Link>
-                      
                     </div>
 
                     {/* <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -216,78 +213,82 @@ export default function Home() {
             </section>
 
             {/* ==================== SECCIÓN FEATURED BOOKS (CON DATOS REALES) ==================== */}
-<section id="featured" className="mx-auto max-w-7xl px-6 py-8 md:py-14">
-  <div className="mb-8">
-    <span className="inline-flex rounded-full border border-[#84A98C]/30 bg-[#84A98C]/20 px-4 py-2 text-sm font-semibold text-[#354f52]">
-      Featured Books
-    </span>
-    <h2 className="mt-4 text-3xl font-bold">Popular picks this week</h2>
-    <p className="mt-2 text-[#52796f]">Descubre nuestras recomendaciones destacadas</p>
-  </div>
+            <section id="featured" className="mx-auto max-w-7xl px-6 py-8 md:py-14">
+                <div className="mb-8">
+                    <span className="inline-flex rounded-full border border-[#84A98C]/30 bg-[#84A98C]/20 px-4 py-2 text-sm font-semibold text-[#354f52]">
+                        Featured Books
+                    </span>
+                    <h2 className="mt-4 text-3xl font-bold">Popular picks this week</h2>
+                    <p className="mt-2 text-[#52796f]">
+                        Descubre nuestras recomendaciones destacadas
+                    </p>
+                </div>
 
-  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-    {featuredBooks.map((book) => (
-      <article
-        key={book.id}
-        className="overflow-hidden rounded-3xl border border-[#cad2c5] bg-white shadow-sm transition hover:shadow-md"
-      >
-        <div className="flex h-56 items-center justify-center bg-gradient-to-br from-[#84A98C] to-[#354F52] text-lg font-semibold text-white overflow-hidden">
-          {book.imageURL || book.coverImageUrl ? (
-            <Image
-              src={book.imageURL || book.coverImageUrl || ''}
-              alt={book.title}
-              width={220}
-              height={220}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span>Book Cover</span>
-          )}
-        </div>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                    {featuredBooks.map((book) => (
+                        <article
+                            key={book.id}
+                            className="overflow-hidden rounded-3xl border border-[#cad2c5] bg-white shadow-sm transition hover:shadow-md"
+                        >
+                            <div className="flex h-56 items-center justify-center bg-gradient-to-br from-[#84A98C] to-[#354F52] text-lg font-semibold text-white overflow-hidden">
+                                {book.imageURL || book.coverImageUrl ? (
+                                    <Image
+                                        src={book.imageURL || book.coverImageUrl || ''}
+                                        alt={book.title}
+                                        width={220}
+                                        height={220}
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span>Book Cover</span>
+                                )}
+                            </div>
 
-        <div className="p-5">
-          <p className="text-sm font-medium text-[#52796f]">
-            {book.categories?.[0]?.category?.name || 'General'}
-          </p>
+                            <div className="p-5">
+                                <p className="text-sm font-medium text-[#52796f]">
+                                    {book.categories?.[0]?.category?.name || 'General'}
+                                </p>
 
-          <h3 className="mt-1 text-xl font-semibold text-[#2f3e46] line-clamp-2">
-            {book.title}
-          </h3>
+                                <h3 className="mt-1 text-xl font-semibold text-[#2f3e46] line-clamp-2">
+                                    {book.title}
+                                </h3>
 
-          <p className="mt-1 text-[#52796f]">{book.author}</p>
+                                <p className="mt-1 text-[#52796f]">{book.author}</p>
 
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-[#354f52]">
-              Stock: {book.inventory?.quantity ?? 0}
-            </span>
-            <span
-              className={`rounded-full px-3 py-1 font-medium ${
-                (book.inventory?.quantity ?? 0) > 0
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {(book.inventory?.quantity ?? 0) > 0 ? 'Available' : 'Out of stock'}
-            </span>
-          </div>
+                                <div className="mt-3 flex items-center justify-between text-sm">
+                                    <span className="text-[#354f52]">
+                                        Stock: {book.inventory?.quantity ?? 0}
+                                    </span>
+                                    <span
+                                        className={`rounded-full px-3 py-1 font-medium ${
+                                            (book.inventory?.quantity ?? 0) > 0
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
+                                        }`}
+                                    >
+                                        {(book.inventory?.quantity ?? 0) > 0
+                                            ? 'Available'
+                                            : 'Out of stock'}
+                                    </span>
+                                </div>
 
-          <div className="mt-5 flex items-center justify-between">
-            <span className="font-bold text-[#354f52]">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              }).format(book.price)}
-            </span>
+                                <div className="mt-5 flex items-center justify-between">
+                                    <span className="font-bold text-[#354f52]">
+                                        {new Intl.NumberFormat('en-US', {
+                                            style: 'currency',
+                                            currency: 'USD',
+                                        }).format(book.price)}
+                                    </span>
 
-            <button className="rounded-xl bg-[#2f3e46] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      </article>
-    ))}
-  </div>
-</section>
+                                    <button className="rounded-xl bg-[#2f3e46] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            </section>
 
             {/* <section
                 id="about"

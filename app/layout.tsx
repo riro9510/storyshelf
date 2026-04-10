@@ -16,15 +16,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className="min-h-screen bg-[#f4f5f2] text-[#2f3e46] antialiased">
                 <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
                     <Link href="/" scroll={false}>
-                    <div className="flex items-center gap-3">
-                        <Image
-                            src="/logo.png"
-                            alt="StoryShelf logo"
-                            width={180}
-                            height={60}
-                            priority
-                        />
-                    </div>
+                        <div className="flex items-center gap-3">
+                            <Image
+                                src="/logo.png"
+                                alt="StoryShelf logo"
+                                width={180}
+                                height={60}
+                                priority
+                            />
+                        </div>
                     </Link>
 
                     <nav className="hidden gap-8 text-sm font-medium md:flex">

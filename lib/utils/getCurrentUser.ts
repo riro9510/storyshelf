@@ -15,7 +15,13 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     if (!session) return null;
 
     try {
-        return JSON.parse(session);
+        const parsed = JSON.parse(decodeURIComponent(session));
+
+        if (!parsed?.id || !parsed?.email) {
+            return null;
+        }
+
+        return parsed;
     } catch {
         return null;
     }
