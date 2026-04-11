@@ -9,20 +9,30 @@ type OrderWithUser = {
     createdAt: Date;
 };
 
-export default async function OrdersPage({ searchParams }: { searchParams?: { updated?: string } }) {
+export default async function OrdersPage({
+    searchParams,
+}: {
+    searchParams?: { updated?: string };
+}) {
     const ordersRaw = await prisma.order.findMany({
+        where: {
+            NOT: {
+                status: 'PENDING',
+                paymentStatus: 'PENDING',
+            }
+        },
         include: { user: true },
         orderBy: { createdAt: 'desc' },
     });
 
     const orders: OrderWithUser[] = ordersRaw.map((o) => ({
         id: o.id,
-        customer:  o.user 
+        customer: o.user
             ? {
-                firstName: o.user.firstName,
-                lastName: o.user.lastName,
-                email: o.user.email,
-            }
+                  firstName: o.user.firstName,
+                  lastName: o.user.lastName,
+                  email: o.user.email,
+              }
             : { firstName: 'Guest', lastName: '', email: '' },
         status: o.status,
         paymentStatus: o.paymentStatus,
