@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
         if (order.paymentStatus !== PaymentStatus.PAID) {
             return NextResponse.json({
                 order,
-                paid: order.paymentStatus === PaymentStatus.PAID,
+                paid: order.paymentStatus === (PaymentStatus.PAID as PaymentStatus),
             });
         }
 
