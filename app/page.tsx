@@ -22,15 +22,6 @@ type Book = {
     isFeatured: boolean;
 };
 
-const categories: Category[] = [
-    { id: 1, name: 'Fiction', slug: 'fiction' },
-    { id: 2, name: 'Romance', slug: 'romance' },
-    { id: 3, name: 'Mystery', slug: 'mystery' },
-    { id: 4, name: 'Fantasy', slug: 'fantasy' },
-    { id: 5, name: 'Self-Help', slug: 'self-help' },
-    { id: 6, name: 'Children', slug: 'children' },
-];
-
 function formatPrice(price: number) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -38,16 +29,18 @@ function formatPrice(price: number) {
     }).format(price);
 }
 
-function getCategoryName(categoryId: number) {
-    const category = categories.find((item) => item.id === categoryId);
-    return category?.name ?? 'Uncategorized';
-}
-
 export default function Home() {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [featuredBooks, setFeaturedBooks] = useState<any[]>([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
+    function getCategoryName(categoryId: number) {
+        const category = categories.find((item) => item.id === categoryId);
+        return category?.name ?? 'Uncategorized';
+    }
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,15 +49,37 @@ export default function Home() {
 
         if (!trimmed) return;
 
-        router.push(`/books?search=${encodeURIComponent(trimmed)}`);
+        router.push(`/books/inventory?search=${encodeURIComponent(trimmed)}`);
     };
-    const categoryStyles: Record<string, { icon: string; bg: string; hover: string }> = {
-        fiction: { icon: '📖', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#84A98C]' },
-        romance: { icon: '❤️', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#e5989b]' },
-        mystery: { icon: '🔍', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#577590]' },
-        fantasy: { icon: '🧙', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#6d597a]' },
-        'self-help': { icon: '💡', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#dda15e]' },
-        children: { icon: '🧸', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#90be6d]' },
+    const getCategoryStyle = (slug: string): { icon: string; bg: string; hover: string } => {
+        const lowerSlug = slug.toLowerCase().trim();
+
+        const styleMap: Record<string, { icon: string; bg: string; hover: string }> = {
+            fiction: { icon: '📖', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#84A98C]' },
+            romance: { icon: '❤️', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#e5989b]' },
+            mystery: { icon: '🔍', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#577590]' },
+            fantasy: { icon: '🧙', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#6d597a]' },
+            'self-help': { icon: '💡', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#dda15e]' },
+            children: { icon: '🧸', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#90be6d]' },
+            adventure: { icon: '🏔️', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#4a90e2]' },
+            'sci-fi': { icon: '🚀', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#9b59b6]' },
+            'science-fiction': { icon: '🚀', bg: 'bg-[#f1f5f4]', hover: 'hover:bg-[#9b59b6]' },
+        };
+
+        if (styleMap[lowerSlug]) {
+            return styleMap[lowerSlug];
+        }
+        for (const [key, style] of Object.entries(styleMap)) {
+            if (lowerSlug.includes(key) || key.includes(lowerSlug)) {
+                return style;
+            }
+        }
+
+        return {
+            icon: '📚',
+            bg: 'bg-[#f1f5f4]',
+            hover: 'hover:bg-[#52796f]',
+        };
     };
 
     useEffect(() => {
@@ -82,6 +97,24 @@ export default function Home() {
         };
 
         fetchFeatured();
+    }, []);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/categories?limit=6');
+                const data = await res.json();
+                console.log('Fetched categories:', data);
+                setCategories(data);
+            } catch (err) {
+                console.error('Error fetching categories:', err);
+                setCategories([]);
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+
+        fetchCategories();
     }, []);
 
     return (
@@ -106,7 +139,7 @@ export default function Home() {
 
                     <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                         <Link
-                            href="/books"
+                            href="/books/inventory"
                             className="rounded-full bg-[#2f3e46] px-6 py-3 text-center font-semibold text-white transition hover:opacity-90"
                         >
                             Browse Books
@@ -191,19 +224,19 @@ export default function Home() {
                     {categories.map((category) => (
                         <Link
                             key={category.id}
-                            href={`/books?category=${category.slug}`}
+                            href={`/books/inventory?category=${category.slug}`}
                             className={`group rounded-2xl border border-[#cad2c5] px-4 py-6 text-center shadow-sm transition-all duration-500 ease-out
-    ${categoryStyles[category.slug]?.bg}
-    ${categoryStyles[category.slug]?.hover}
-    hover:-translate-y-2 hover:text-white
-    opacity-0 translate-y-6 animate-fadeUp`}
+                            ${getCategoryStyle(category.slug).bg}
+                            ${getCategoryStyle(category.slug).hover}
+                            hover:-translate-y-2 hover:text-white
+                            opacity-0 translate-y-6 animate-fadeUp`}
                             style={{
                                 animationDelay: `${category.id * 0.08}s`,
                                 animationFillMode: 'forwards',
                             }}
                         >
                             <div className="text-3xl transition-transform duration-300 group-hover:scale-110">
-                                {categoryStyles[category.slug]?.icon}
+                                {getCategoryStyle(category.slug).icon || '📚'}
                             </div>
 
                             <p className="mt-3 font-semibold">{category.name}</p>
